@@ -228,14 +228,12 @@ func (config *DirectClientConfig) getUserIdentificationPartialConfig(configAuthI
 	// blindly overwrite existing values based on precedence
 	if len(configAuthInfo.Token) > 0 {
 		mergedConfig.BearerToken = configAuthInfo.Token
-		mergedConfig.BearerTokenFile = configAuthInfo.TokenFile
 	} else if len(configAuthInfo.TokenFile) > 0 {
-		tokenBytes, err := ioutil.ReadFile(configAuthInfo.TokenFile)
-		if err != nil {
+		ts := restclient.NewCachedFileTokenSource(configAuthInfo.TokenFile)
+		if _, err := ts.Token(); err != nil {
 			return nil, err
 		}
-		mergedConfig.BearerToken = string(tokenBytes)
-		mergedConfig.BearerTokenFile = configAuthInfo.TokenFile
+		mergedConfig.WrapTransport = restclient.TokenSourceWrapTransport(ts)
 	}
 	if len(configAuthInfo.Impersonate) > 0 {
 		mergedConfig.Impersonate = restclient.ImpersonationConfig{
@@ -294,6 +292,16 @@ func makeUserIdentificationConfig(info clientauth.Info) *restclient.Config {
 	config.CertFile = info.CertFile
 	config.KeyFile = info.KeyFile
 	config.BearerToken = info.BearerToken
+	return config
+}
+
+// makeUserIdentificationFieldsConfig returns a client.Config capable of being merged using mergo for only server identification information
+func makeServerIdentificationConfig(info clientauth.Info) restclient.Config {
+	config := restclient.Config{}
+	config.CAFile = info.CAFile
+	if info.Insecure != nil {
+		config.Insecure = *info.Insecure
+	}
 	return config
 }
 
@@ -490,9 +498,8 @@ func (config *inClusterClientConfig) ClientConfig() (*restclient.Config, error) 
 		if server := config.overrides.ClusterInfo.Server; len(server) > 0 {
 			icc.Host = server
 		}
-		if len(config.overrides.AuthInfo.Token) > 0 || len(config.overrides.AuthInfo.TokenFile) > 0 {
-			icc.BearerToken = config.overrides.AuthInfo.Token
-			icc.BearerTokenFile = config.overrides.AuthInfo.TokenFile
+		if token := config.overrides.AuthInfo.Token; len(token) > 0 {
+			icc.BearerToken = token
 		}
 		if certificateAuthorityFile := config.overrides.ClusterInfo.CertificateAuthority; len(certificateAuthorityFile) > 0 {
 			icc.TLSClientConfig.CAFile = certificateAuthorityFile
