@@ -27,6 +27,7 @@ func NewPvcCommand(streams genericclioptions.IOStreams) *cobra.Command {
 
 	cmd.PersistentFlags().StringVarP(&ns, "namespace", "n", "default", "the namespace you want to check")
 	cmd.AddCommand(NewLsCommand())
+	cmd.AddCommand(NewInspectCommand())
 
 	return cmd
 }
