@@ -24,7 +24,7 @@ PersistentVolumeClaim/PersistentVolume 资源的生命周期大致分为四个�
 ```
 $ kubectl pvc -n kube-system inspect test-rbd
 DESIRED POD                    DESIRED NODE
-test-pod   		       					 calico-net2
+test-pod                       calico-net2
 PHASE       STATUS    DETAIL
 Provision   success
 Bind        success
@@ -65,7 +65,7 @@ rbd-pvc                                       pvc-dafe629c-708d-11e9-a38c-6c92bf
 ```
 $ kubectl pvc ls test-deploy-6445845799-c8cgq -p test-deploy-6445845799-c8cgq
 NAME                                          VOLUME
-test-cephfs				      										  pvc-b05be774-7e26-11e9-bc3e-6c92bf244689
+test-cephfs                                   pvc-b05be774-7e26-11e9-bc3e-6c92bf244689
 csi-cephfs-pvc                                pvc-58f38e38-7091-11e9-a38c-6c92bf24e26f
 ```
 
