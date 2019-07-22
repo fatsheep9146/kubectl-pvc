@@ -63,7 +63,7 @@ rbd-pvc                                       pvc-dafe629c-708d-11e9-a38c-6c92bf
 ### 3. 列出某个 pod 使用的所有 pvc
 
 ```
-$ kubectl pvc ls test-deploy-6445845799-c8cgq -p test-deploy-6445845799-c8cgq
+$ kubectl pvc ls -p test-deploy-6445845799-c8cgq
 NAME                                          VOLUME
 test-cephfs                                   pvc-b05be774-7e26-11e9-bc3e-6c92bf244689
 csi-cephfs-pvc                                pvc-58f38e38-7091-11e9-a38c-6c92bf24e26f
