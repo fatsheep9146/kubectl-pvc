@@ -15,9 +15,9 @@ PersistentVolumeClaim/PersistentVolume 资源的生命周期大致分为四个�
 
 所以针对任何一个 pvc 如果借助我们的命令来展示其状态时，我们也会按照这几个阶段来进行展示
 
-## 常用命令
+## Common Usage
 
-### 列出某个 persistentVolumeClaim 的当前状态
+### 1. 列出某个 persistentVolumeClaim 的当前状态
 
 **列出一个 ceph rbd 的 persistentVolumeClaim 名字叫做 test-rbd，位于 kube-system 这个 namespace 下，被一个叫做 test-pod 所使用**
 
@@ -51,7 +51,7 @@ Mount       partly fail   pods: [test-deploy-6445845799-c8cgq] are still not mou
 
 上图结果表面有 3 个 pod 想要使用这个 pvc，并且目前 Mount 步骤只有一部分 pod 完成了，test-deploy-6445845799-c8cgq 这个 pod 的 mount 操作还没有完成
 
-**列出某个 namespace 下面的所有 pvc**
+### 2. 列出某个 namespace 下面的所有 pvc
 
 ```
 $ kubectl pvc -n kube-system ls
@@ -60,7 +60,7 @@ csi-cephfs-pvc                                pvc-58f38e38-7091-11e9-a38c-6c92bf
 rbd-pvc                                       pvc-dafe629c-708d-11e9-a38c-6c92bf24e26f
 ```
 
-**列出某个 pod 使用的所有 pvc**
+### 3. 列出某个 pod 使用的所有 pvc
 
 ```
 $ kubectl pvc ls test-deploy-6445845799-c8cgq -p test-deploy-6445845799-c8cgq
