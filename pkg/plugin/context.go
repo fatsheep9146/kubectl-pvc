@@ -15,6 +15,7 @@ type CaptainContext struct {
 	cli       clientset.Interface
 	config    *rest.Config
 	namespace string
+	name string
 }
 
 func NewCaptainContext(streams genericclioptions.IOStreams) *CaptainContext {
@@ -23,8 +24,10 @@ func NewCaptainContext(streams genericclioptions.IOStreams) *CaptainContext {
 	}
 }
 
-func (p *CaptainContext) Complete(namespace string) (err error) {
+func (p *CaptainContext) Complete(namespace, name string) (err error) {
 	p.namespace = namespace
+	p.name = name
+
 
 	configLoader := p.flags.ToRawKubeConfigLoader()
 
@@ -41,8 +44,8 @@ func (p *CaptainContext) Complete(namespace string) (err error) {
 	return nil
 }
 
-func (p *CaptainContext) GetHelmRequest(name string) (*v1alpha1.HelmRequest, error) {
-	return p.cli.AppV1alpha1().HelmRequests(p.namespace).Get(name, metav1.GetOptions{})
+func (p *CaptainContext) GetHelmRequest() (*v1alpha1.HelmRequest, error) {
+	return p.cli.AppV1alpha1().HelmRequests(p.namespace).Get(p.name, metav1.GetOptions{})
 }
 
 func (p *CaptainContext) UpdateHelmRequest(new *v1alpha1.HelmRequest) (*v1alpha1.HelmRequest, error) {

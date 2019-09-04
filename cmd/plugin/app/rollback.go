@@ -18,7 +18,6 @@ var (
 )
 
 type RollbackOption struct {
-	name string
 	pctx *plugin.CaptainContext
 }
 
@@ -50,7 +49,6 @@ func NewRollbackCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.name, "helmrequest", "r", "", "the specific helmrequest name you want to update")
 	return cmd
 }
 
@@ -71,7 +69,7 @@ func (opts *RollbackOption) Run() (err error) {
 	}
 
 	pctx := opts.pctx
-	hr, err := pctx.GetHelmRequest(opts.name)
+	hr, err := pctx.GetHelmRequest()
 	if err != nil {
 		return err
 	}

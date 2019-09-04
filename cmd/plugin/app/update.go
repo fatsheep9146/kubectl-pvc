@@ -12,12 +12,11 @@ import (
 var (
 	updateExample = `
 	# update one helmerequest
-	kubectl captain update -n <namespace> -r <helmrequest> -v <version>
+	kubectl captain update -n <namespace> --name <name> -v <version>
 `
 )
 
 type UpdateOption struct {
-	name    string
 	version string
 	pctx    *plugin.CaptainContext
 }
@@ -49,7 +48,6 @@ func NewUpdateCommand() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVarP(&opts.name, "helmrequest", "r", "", "the specific helmrequest name you want to update")
 	cmd.Flags().StringVarP(&opts.version, "version", "v", "", "the chart version you want to use ")
 	return cmd
 }
@@ -73,7 +71,7 @@ func (opts *UpdateOption) Run() (err error) {
 	}
 
 	pctx := opts.pctx
-	hr, err := pctx.GetHelmRequest(opts.name)
+	hr, err := pctx.GetHelmRequest()
 	if err != nil {
 		return err
 	}
