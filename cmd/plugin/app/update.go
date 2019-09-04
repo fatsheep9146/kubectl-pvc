@@ -3,7 +3,10 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
+	"helm.sh/helm/pkg/chartutil"
+	"helm.sh/helm/pkg/strvals"
 	"k8s.io/klog"
 
 	"github.com/alauda/kubectl-captain/pkg/plugin"
@@ -12,12 +15,13 @@ import (
 var (
 	updateExample = `
 	# update one helmerequest
-	kubectl captain update -n <namespace> --name <name> -v <version>
+	kubectl captain update -n <namespace> --name <name> -v <version> --set=<values>
 `
 )
 
 type UpdateOption struct {
 	version string
+	values []string
 	pctx    *plugin.CaptainContext
 }
 
@@ -48,6 +52,7 @@ func NewUpdateCommand() *cobra.Command {
 		},
 	}
 
+	cmd.Flags().StringArrayVarP(&opts.values, "set", "s", []string{}, "custom values")
 	cmd.Flags().StringVarP(&opts.version, "version", "v", "", "the chart version you want to use ")
 	return cmd
 }
@@ -88,6 +93,18 @@ func (opts *UpdateOption) Run() (err error) {
 	 hr.Annotations["last-spec"] = string(old)
 
 	hr.Spec.Version = opts.version
+
+
+	// merge values....oh,we have to import helm now....
+	base := hr.Spec.Values.AsMap()
+	for _, value := range opts.values {
+		if err := strvals.ParseInto(value, base); err != nil {
+			return errors.Wrap(err, "failed parsing --set data")
+		}
+	}
+
+	hr.Spec.Values = chartutil.Values(base)
+
 	_, err = pctx.UpdateHelmRequest(hr)
 	return err
 }
