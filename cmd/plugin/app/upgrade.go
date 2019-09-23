@@ -14,8 +14,8 @@ import (
 
 var (
 	updateExample = `
-	# update one helmerequest
-	kubectl captain upgrade -n <namespace> --name <name> -v <version> --set=<values>
+	# upgrade helmrequest in default ns to set it's chart version to 1.5.0 and set value 'a=b'
+	kubectl captain upgrade foo -n default -v 1.5.0 --set=a=b
 `
 )
 
@@ -45,7 +45,7 @@ func NewUpgradeCommand() *cobra.Command {
 				return err
 			}
 
-			if err := opts.Run(); err != nil {
+			if err := opts.Run(args); err != nil {
 				return err
 			}
 			return nil
@@ -69,14 +69,18 @@ func (opts *UpgradeOption) Validate() error {
 // Run do the real update
 // 1. save the old spec to annotation
 // 2. update
-func (opts *UpgradeOption) Run() (err error) {
+func (opts *UpgradeOption) Run(args []string) (err error) {
 	if opts.pctx == nil {
 		klog.Errorf("UpgradeOption.ctx should not be nil")
 		return fmt.Errorf("UpgradeOption.ctx should not be nil")
 	}
 
+	if len(args) == 0 {
+		return fmt.Errorf("user should input helmrequest name to upgrade")
+	}
+
 	pctx := opts.pctx
-	hr, err := pctx.GetHelmRequest()
+	hr, err := pctx.GetHelmRequest(args[0])
 	if err != nil {
 		return err
 	}
