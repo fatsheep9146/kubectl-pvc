@@ -15,26 +15,26 @@ import (
 var (
 	updateExample = `
 	# update one helmerequest
-	kubectl captain update -n <namespace> --name <name> -v <version> --set=<values>
+	kubectl captain upgrade -n <namespace> --name <name> -v <version> --set=<values>
 `
 )
 
-type UpdateOption struct {
+type UpgradeOption struct {
 	version string
 	values []string
 	pctx    *plugin.CaptainContext
 }
 
-func NewUpdateOption() *UpdateOption {
-	return &UpdateOption{}
+func NewUpdateOption() *UpgradeOption {
+	return &UpgradeOption{}
 }
 
-func NewUpdateCommand() *cobra.Command {
+func NewUpgradeCommand() *cobra.Command {
 	opts := NewUpdateOption()
 
 	cmd := &cobra.Command{
-		Use:     "update",
-		Short:   "update one helmrequest",
+		Use:     "upgrade",
+		Short:   "upgrade a helmrequest",
 		Example: updateExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := opts.Complete(pctx); err != nil {
@@ -57,22 +57,22 @@ func NewUpdateCommand() *cobra.Command {
 	return cmd
 }
 
-func (opts *UpdateOption) Complete(pctx *plugin.CaptainContext) error {
+func (opts *UpgradeOption) Complete(pctx *plugin.CaptainContext) error {
 	opts.pctx = pctx
 	return nil
 }
 
-func (opts *UpdateOption) Validate() error {
+func (opts *UpgradeOption) Validate() error {
 	return nil
 }
 
 // Run do the real update
 // 1. save the old spec to annotation
 // 2. update
-func (opts *UpdateOption) Run() (err error) {
+func (opts *UpgradeOption) Run() (err error) {
 	if opts.pctx == nil {
-		klog.Errorf("UpdateOption.ctx should not be nil")
-		return fmt.Errorf("UpdateOption.ctx should not be nil")
+		klog.Errorf("UpgradeOption.ctx should not be nil")
+		return fmt.Errorf("UpgradeOption.ctx should not be nil")
 	}
 
 	pctx := opts.pctx
