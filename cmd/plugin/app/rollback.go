@@ -64,8 +64,8 @@ func (opts *RollbackOption) Validate() error {
 // Run rollback a helmrequest
 func (opts *RollbackOption) Run() (err error) {
 	if opts.pctx == nil {
-		klog.Errorf("UpdateOption.ctx should not be nil")
-		return fmt.Errorf("UpdateOption.ctx should not be nil")
+		klog.Errorf("UpgradeOption.ctx should not be nil")
+		return fmt.Errorf("UpgradeOption.ctx should not be nil")
 	}
 
 	pctx := opts.pctx
