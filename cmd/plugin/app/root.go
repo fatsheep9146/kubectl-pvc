@@ -28,7 +28,6 @@ func NewCaptainCommand(streams genericclioptions.IOStreams) *cobra.Command {
 	}
 
 	cmd.PersistentFlags().StringVarP(&ns, "namespace", "n", "default", "the namespace you want to check")
-	cmd.PersistentFlags().StringVarP(&name, "name", "", "", "the specific helmrequest name you want to operate on")
 	cmd.AddCommand(NewUpgradeCommand())
 	cmd.AddCommand(NewRollbackCommand())
 

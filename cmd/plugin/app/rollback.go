@@ -12,8 +12,8 @@ import (
 
 var (
 	rollbackExample = `
-	# rollback a helmerequest
-	kubectl captain rollback -n <namespace> -r <helmrequest> 
+	# rollback  helmerequest foo to last configurations
+	kubectl captain rollback foo -n default
 `
 )
 
@@ -42,7 +42,7 @@ func NewRollbackCommand() *cobra.Command {
 				return err
 			}
 
-			if err := opts.Run(); err != nil {
+			if err := opts.Run(args); err != nil {
 				return err
 			}
 			return nil
@@ -62,14 +62,19 @@ func (opts *RollbackOption) Validate() error {
 }
 
 // Run rollback a helmrequest
-func (opts *RollbackOption) Run() (err error) {
+func (opts *RollbackOption) Run(args []string) (err error) {
 	if opts.pctx == nil {
 		klog.Errorf("UpgradeOption.ctx should not be nil")
 		return fmt.Errorf("UpgradeOption.ctx should not be nil")
 	}
 
+	if len(args) == 0 {
+		return fmt.Errorf("user should input a helmrequest name  to rollback")
+	}
+
+
 	pctx := opts.pctx
-	hr, err := pctx.GetHelmRequest()
+	hr, err := pctx.GetHelmRequest(args[0])
 	if err != nil {
 		return err
 	}

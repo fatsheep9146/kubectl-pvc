@@ -44,8 +44,8 @@ func (p *CaptainContext) Complete(namespace, name string) (err error) {
 	return nil
 }
 
-func (p *CaptainContext) GetHelmRequest() (*v1alpha1.HelmRequest, error) {
-	return p.cli.AppV1alpha1().HelmRequests(p.namespace).Get(p.name, metav1.GetOptions{})
+func (p *CaptainContext) GetHelmRequest(name string) (*v1alpha1.HelmRequest, error) {
+	return p.cli.AppV1alpha1().HelmRequests(p.namespace).Get(name, metav1.GetOptions{})
 }
 
 func (p *CaptainContext) UpdateHelmRequest(new *v1alpha1.HelmRequest) (*v1alpha1.HelmRequest, error) {
