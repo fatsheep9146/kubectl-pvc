@@ -14,8 +14,8 @@ import (
 
 var (
 	updateExample = `
-	# update one helmerequest
-	kubectl captain upgrade -n <namespace> --name <name> -v <version> --set=<values>
+	# upgrade helmrequest in default ns to set it's chart version to 1.5.0 and set value 'a=b'
+	kubectl captain upgrade foo -n default -v 1.5.0 --set=a=b
 `
 )
 

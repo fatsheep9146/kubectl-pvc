@@ -12,8 +12,8 @@ import (
 
 var (
 	rollbackExample = `
-	# rollback a helmerequest
-	kubectl captain rollback -n <namespace> -r <helmrequest> 
+	# rollback  helmerequest foo to last configurations
+	kubectl captain rollback foo -n default
 `
 )
 
