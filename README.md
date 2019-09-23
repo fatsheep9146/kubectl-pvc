@@ -7,7 +7,7 @@ This is kubectl plugin for [captain](https://github.com/alauda/captain), current
 * `kubectl captain rollback`: rollback a helmrequest
 
 
-## install
+## Install
 
 Download the latest build from the [releases](https://github.com/alauda/kubectl-captain/releases) page, and run
 
@@ -22,7 +22,7 @@ chmod +x /usr/local/bin/kubectl-captain
 
 `kubectl captain upgrade jenkins -n default --set global.images.jenkins.tag=1.6.0 -v 1.6.0`
 
-This command upgrade a HelmRequest named `jenkins` in `default` namespace, set the chart version to `1.5.0`, and set it's image tag to 1.6.0
+This command upgrade a HelmRequest named `jenkins` in `default` namespace, set the chart version to `1.6.0`, and set it's image tag to 1.6.0
 
 2. kubectl rollback
 
