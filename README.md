@@ -22,7 +22,7 @@ PersistentVolumeClaim/PersistentVolume 资源的生命周期大致分为四个�
 **列出一个 ceph rbd 的 persistentVolumeClaim 名字叫做 test-rbd，位于 kube-system 这个 namespace 下，被一个叫做 test-pod 所使用**
 
 ```
-$ kubectl pvc -n kube-system inspect test-rbd
+$ kubectl-pvc -n kube-system inspect test-rbd
 DESIRED POD                    DESIRED NODE
 test-pod                       calico-net2
 PHASE       STATUS    DETAIL
@@ -37,7 +37,7 @@ Mount       success
 **列出一个 cephfs 的 persistentVolumeClaim 当前名字叫做 test-cephfs, 位于 default namespace 下面，被三个 pod 所共享**
 
 ```
-$ kubectl pvc inspect test-cephfs 
+$ kubectl-pvc inspect test-cephfs 
 DESIRED POD                       DESIRED NODE
 test-deploy-6445845799-c8cgq   	  calico-master3
 test-deploy-6445845799-pd8s2      calico-master1
@@ -54,7 +54,7 @@ Mount       partly fail   pods: [test-deploy-6445845799-c8cgq] are still not mou
 ### 2. 列出某个 namespace 下面的所有 pvc
 
 ```
-$ kubectl pvc -n kube-system ls
+$ kubectl-pvc -n kube-system ls
 NAME                                          VOLUME
 csi-cephfs-pvc                                pvc-58f38e38-7091-11e9-a38c-6c92bf24e26f
 rbd-pvc                                       pvc-dafe629c-708d-11e9-a38c-6c92bf24e26f
@@ -63,7 +63,7 @@ rbd-pvc                                       pvc-dafe629c-708d-11e9-a38c-6c92bf
 ### 3. 列出某个 pod 使用的所有 pvc
 
 ```
-$ kubectl pvc ls -p test-deploy-6445845799-c8cgq
+$ kubectl-pvc ls -p test-deploy-6445845799-c8cgq
 NAME                                          VOLUME
 test-cephfs                                   pvc-b05be774-7e26-11e9-bc3e-6c92bf244689
 csi-cephfs-pvc                                pvc-58f38e38-7091-11e9-a38c-6c92bf24e26f
