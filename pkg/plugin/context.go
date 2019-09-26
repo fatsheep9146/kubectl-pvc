@@ -15,7 +15,6 @@ type CaptainContext struct {
 	cli       clientset.Interface
 	config    *rest.Config
 	namespace string
-	name string
 }
 
 func NewCaptainContext(streams genericclioptions.IOStreams) *CaptainContext {
@@ -24,10 +23,8 @@ func NewCaptainContext(streams genericclioptions.IOStreams) *CaptainContext {
 	}
 }
 
-func (p *CaptainContext) Complete(namespace, name string) (err error) {
+func (p *CaptainContext) Complete(namespace string) (err error) {
 	p.namespace = namespace
-	p.name = name
-
 
 	configLoader := p.flags.ToRawKubeConfigLoader()
 

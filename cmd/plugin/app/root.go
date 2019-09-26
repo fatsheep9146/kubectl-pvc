@@ -13,13 +13,13 @@ var pctx *plugin.CaptainContext = nil
 func NewCaptainCommand(streams genericclioptions.IOStreams) *cobra.Command {
 	pctx = plugin.NewCaptainContext(streams)
 	var ns string
-	var name string
+
 
 	cmd := &cobra.Command{
 		Use:   "cpatain",
 		Short: "kubectl captain: access helmrequest resource",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-			err := pctx.Complete(ns, name)
+			err := pctx.Complete(ns)
 			if err != nil {
 				return err
 			}
