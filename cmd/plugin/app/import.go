@@ -34,6 +34,9 @@ type ImportOptions struct {
 	repoNamespace string
 
 	helmBinPath string
+
+	// useful in business cluster,
+	createCR bool
 }
 
 func NewImportOptions() *ImportOptions {
@@ -74,6 +77,7 @@ func NewImportCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&opts.repoName, "repo", "r", "", "the repo name this chart belongs")
 	cmd.Flags().StringVarP(&opts.repoNamespace, "repo-namespace", "", "alauda-system", "the ChartRepo resources' namespace")
 	cmd.Flags().StringVarP(&opts.helmBinPath, "helm-bin-path", "", "/usr/local/bin/helm", "the helm binary path")
+	cmd.Flags().BoolVarP(&opts.createCR, "create-chartrepo", "", true, "create chartrepo")
 	return cmd
 }
 
@@ -119,19 +123,23 @@ func (opts *ImportOptions) Run(args []string) (err error) {
 		return err
 	}
 
-	// check chartrepo exist
-	_, err = opts.pctx.GetChartRepo(opts.repoName, opts.repoNamespace)
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			klog.Info("Create chart repo: ", opts.repoName)
-			if err := opts.createChartRepo(opts.repoName, opts.repoNamespace); err != nil {
+	if opts.createCR {
+		// check chartrepo exist
+		_, err = opts.pctx.GetChartRepo(opts.repoName, opts.repoNamespace)
+		if err != nil {
+			if apierrors.IsNotFound(err) {
+				klog.Info("Create chart repo: ", opts.repoName)
+				if err := opts.createChartRepo(opts.repoName, opts.repoNamespace); err != nil {
+					return err
+				}
+			} else {
 				return err
 			}
 		} else {
-			return err
+			klog.Info("Using exiting chartrepo")
 		}
+
 	}
-	klog.Info("Using exiting chartrepo")
 
 	hr := v1alpha1.HelmRequest{
 		TypeMeta: metav1.TypeMeta{
