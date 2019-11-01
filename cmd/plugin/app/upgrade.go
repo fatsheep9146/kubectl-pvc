@@ -7,7 +7,9 @@ import (
 	"github.com/spf13/cobra"
 	"helm.sh/helm/pkg/chartutil"
 	"helm.sh/helm/pkg/strvals"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog"
+	"time"
 
 	"github.com/alauda/kubectl-captain/pkg/plugin"
 )
@@ -21,8 +23,12 @@ var (
 
 type UpgradeOption struct {
 	version string
-	values []string
-	pctx    *plugin.CaptainContext
+	values  []string
+
+	wait    bool
+	timeout int
+
+	pctx *plugin.CaptainContext
 }
 
 func NewUpdateOption() *UpgradeOption {
@@ -54,6 +60,8 @@ func NewUpgradeCommand() *cobra.Command {
 
 	cmd.Flags().StringArrayVarP(&opts.values, "set", "s", []string{}, "custom values")
 	cmd.Flags().StringVarP(&opts.version, "version", "v", "", "the chart version you want to use ")
+	cmd.Flags().BoolVarP(&opts.wait, "wait", "w", false, "wait for the helmrequest to be ready")
+	cmd.Flags().IntVarP(&opts.timeout, "timeout", "t", 0, "timeout for the wait")
 	return cmd
 }
 
@@ -94,10 +102,9 @@ func (opts *UpgradeOption) Run(args []string) (err error) {
 	if hr.Annotations == nil {
 		hr.Annotations = make(map[string]string)
 	}
-	 hr.Annotations["last-spec"] = string(old)
+	hr.Annotations["last-spec"] = string(old)
 
 	hr.Spec.Version = opts.version
-
 
 	// merge values....oh,we have to import helm now....
 	base := hr.Spec.Values.AsMap()
@@ -110,5 +117,24 @@ func (opts *UpgradeOption) Run(args []string) (err error) {
 	hr.Spec.Values = chartutil.Values(base)
 
 	_, err = pctx.UpdateHelmRequest(hr)
-	return err
+	if !opts.wait {
+		return err
+	}
+
+	klog.Info("Start wait for helmrequest to be ready")
+
+	f := func() (done bool, err error) {
+		result, err := pctx.GetHelmRequest(hr.GetName())
+		if err != nil {
+			return false, err
+		}
+		return result.Status.Phase == "Synced", nil
+	}
+
+	if opts.timeout != 0 {
+		return wait.Poll(1*time.Second, time.Duration(opts.timeout)*time.Second, f)
+	} else {
+		return wait.PollInfinite(1*time.Second, f)
+	}
+
 }
