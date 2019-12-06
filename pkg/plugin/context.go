@@ -53,6 +53,7 @@ func (p *CaptainContext) CreateHelmRequest(new *v1alpha1.HelmRequest) (*v1alpha1
 	return p.cli.AppV1alpha1().HelmRequests(new.GetNamespace()).Create(new)
 }
 
+
 func (p *CaptainContext) UpdateHelmRequest(new *v1alpha1.HelmRequest) (*v1alpha1.HelmRequest, error) {
 	return p.cli.AppV1alpha1().HelmRequests(p.namespace).Update(new)
 }

@@ -14,10 +14,9 @@ func NewCaptainCommand(streams genericclioptions.IOStreams) *cobra.Command {
 	pctx = plugin.NewCaptainContext(streams)
 	var ns string
 
-
 	cmd := &cobra.Command{
 		Use:   "cpatain",
-		Short: "kubectl captain: access helmrequest resource",
+		Short: "kubectl captain: access helmrequest/chartrepo resource",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			err := pctx.Complete(ns)
 			if err != nil {
@@ -28,6 +27,8 @@ func NewCaptainCommand(streams genericclioptions.IOStreams) *cobra.Command {
 	}
 
 	cmd.PersistentFlags().StringVarP(&ns, "namespace", "n", "default", "the namespace you want to check")
+	cmd.AddCommand(NewCreateRepoCommand())
+	cmd.AddCommand(NewCreateCommand())
 	cmd.AddCommand(NewUpgradeCommand())
 	cmd.AddCommand(NewRollbackCommand())
 	cmd.AddCommand(NewImportCommand())

@@ -38,3 +38,17 @@ This command rollback a HelmRequest to it's previous settings.
 This command import an existing helm v2 release named `wordpress`, who's chart is belongs to a repo named `stable`. this command will try to 
 create a ChartRepo resource for this repo first in the `captain` namespace if it not exist, afterwards it will create a HelmRequest resource
 named `wordpress` in the `default` namespace. Captain will do the sync stuff. 
+
+4. kubectl captain create-repo
+
+`kubectl captain create-repo test-repo --url=https://alauda.github.io/captain-test-charts/ -n captain -w --timeout=30`
+
+This command create a ChartRepo named `test-repo` in the `captain` namespace.
+
+
+5. kubectl captain create
+
+`kubectl captain create test-nginx --chart=stable/nginx-ingress --version=1.26.2 --set=a=b -w --timeout=30`
+
+This command create a HelmRequest named `test-nginx`, using chart `stable/nginx-ingress`, and version `1.26.2`, and some values.
+

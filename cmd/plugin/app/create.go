@@ -1,51 +1,47 @@
 package app
 
 import (
-	"encoding/json"
 	"fmt"
+	"github.com/alauda/helm-crds/pkg/apis/app/v1alpha1"
+	"github.com/alauda/kubectl-captain/pkg/plugin"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"helm.sh/helm/pkg/chartutil"
 	"helm.sh/helm/pkg/strvals"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog"
-	"strings"
 	"time"
-
-	"github.com/alauda/kubectl-captain/pkg/plugin"
 )
 
 var (
-	updateExample = `
-	# upgrade helmrequest in default ns to set it's chart version to 1.5.0 and set value 'a=b'
-	kubectl captain upgrade foo -n default -v 1.5.0 --set=a=b
+	createExample = `
+	# create helmrequest in default ns to set it's chart version to 1.5.0 and set value 'a=b'
+	kubectl captain create foo --chart=stable/nginx-ingress -v 1.5.0 --set=a=b
 `
 )
 
-type UpgradeOption struct {
+type CreateOption struct {
+	chart   string
 	version string
 	values  []string
 
 	wait    bool
 	timeout int
 
-	// maybe the user what to use a different repo
-	repo string
-
 	pctx *plugin.CaptainContext
 }
 
-func NewUpdateOption() *UpgradeOption {
-	return &UpgradeOption{}
+func NewCreateOption() *CreateOption {
+	return &CreateOption{}
 }
 
-func NewUpgradeCommand() *cobra.Command {
-	opts := NewUpdateOption()
+func NewCreateCommand() *cobra.Command {
+	opts := NewCreateOption()
 
 	cmd := &cobra.Command{
-		Use:     "upgrade",
-		Short:   "upgrade a helmrequest",
-		Example: updateExample,
+		Use:     "create",
+		Short:   "create a helmrequest",
+		Example: createExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := opts.Complete(pctx); err != nil {
 				return err
@@ -66,55 +62,40 @@ func NewUpgradeCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&opts.version, "version", "v", "", "the chart version you want to use ")
 	cmd.Flags().BoolVarP(&opts.wait, "wait", "w", false, "wait for the helmrequest to be synced")
 	cmd.Flags().IntVarP(&opts.timeout, "timeout", "t", 0, "timeout for the wait")
-	cmd.Flags().StringVarP(&opts.repo, "repo", "r", "", "chartrepo for the chart")
+	cmd.Flags().StringVarP(&opts.chart, "chart", "c", "", "chart name, format: <repo>/<chart>")
 	return cmd
 }
 
-func (opts *UpgradeOption) Complete(pctx *plugin.CaptainContext) error {
+func (opts *CreateOption) Complete(pctx *plugin.CaptainContext) error {
 	opts.pctx = pctx
 	return nil
 }
 
-func (opts *UpgradeOption) Validate() error {
+func (opts *CreateOption) Validate() error {
 	return nil
 }
 
 // Run do the real update
 // 1. save the old spec to annotation
 // 2. update
-func (opts *UpgradeOption) Run(args []string) (err error) {
+func (opts *CreateOption) Run(args []string) (err error) {
 	if opts.pctx == nil {
 		klog.Errorf("UpgradeOption.ctx should not be nil")
 		return fmt.Errorf("UpgradeOption.ctx should not be nil")
 	}
 
 	if len(args) == 0 {
-		return fmt.Errorf("user should input helmrequest name to upgrade")
+		return fmt.Errorf("user should input helmrequest name to create")
 	}
 
+	name := args[0]
 	pctx := opts.pctx
-	hr, err := pctx.GetHelmRequest(args[0])
-	if err != nil {
-		return err
-	}
-
-	// TODO: remove
-	old, err := json.Marshal(hr.Spec)
-	if err != nil {
-		return err
-	}
-
-	if hr.Annotations == nil {
-		hr.Annotations = make(map[string]string)
-	}
-	hr.Annotations["last-spec"] = string(old)
+	var hr v1alpha1.HelmRequest
 
 	hr.Spec.Version = opts.version
-
-	if opts.repo != "" {
-		splits := strings.Split(hr.Spec.Chart, "/")
-		hr.Spec.Chart = opts.repo + "/" + splits[1]
-	}
+	hr.Spec.Chart = opts.chart
+	hr.Name = name
+	hr.Namespace = pctx.GetNamespace()
 
 	// merge values....oh,we have to import helm now....
 	base := hr.Spec.Values.AsMap()
@@ -126,7 +107,7 @@ func (opts *UpgradeOption) Run(args []string) (err error) {
 
 	hr.Spec.Values = chartutil.Values(base)
 
-	_, err = pctx.UpdateHelmRequest(hr)
+	_, err = pctx.CreateHelmRequest(&hr)
 	if !opts.wait {
 		return err
 	}

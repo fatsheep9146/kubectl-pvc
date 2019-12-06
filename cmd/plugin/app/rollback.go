@@ -72,7 +72,6 @@ func (opts *RollbackOption) Run(args []string) (err error) {
 		return fmt.Errorf("user should input a helmrequest name  to rollback")
 	}
 
-
 	pctx := opts.pctx
 	hr, err := pctx.GetHelmRequest(args[0])
 	if err != nil {
@@ -95,6 +94,11 @@ func (opts *RollbackOption) Run(args []string) (err error) {
 	hr.Spec = new
 
 	_, err = pctx.UpdateHelmRequest(hr)
+
+	if err == nil {
+		klog.Infof("Rollback to version: %s", new.Version)
+	}
+
 	return err
 
 }
