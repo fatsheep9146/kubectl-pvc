@@ -3,8 +3,10 @@ package plugin
 import (
 	"github.com/alauda/helm-crds/pkg/apis/app/v1alpha1"
 	clientset "github.com/alauda/helm-crds/pkg/client/clientset/versioned"
+	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog"
 )
@@ -53,7 +55,6 @@ func (p *CaptainContext) CreateHelmRequest(new *v1alpha1.HelmRequest) (*v1alpha1
 	return p.cli.AppV1alpha1().HelmRequests(new.GetNamespace()).Create(new)
 }
 
-
 func (p *CaptainContext) UpdateHelmRequest(new *v1alpha1.HelmRequest) (*v1alpha1.HelmRequest, error) {
 	return p.cli.AppV1alpha1().HelmRequests(p.namespace).Update(new)
 }
@@ -68,4 +69,13 @@ func (p *CaptainContext) GetNamespace() string {
 
 func (p *CaptainContext) GetRestConfig() *rest.Config {
 	return p.config
+}
+
+func (p *CaptainContext) GetConfigMap(name string) (*v1.ConfigMap, error) {
+	cli, err := kubernetes.NewForConfig(p.config)
+	if err != nil {
+		return nil, err
+	}
+
+	return cli.CoreV1().ConfigMaps(p.namespace).Get(name, metav1.GetOptions{})
 }

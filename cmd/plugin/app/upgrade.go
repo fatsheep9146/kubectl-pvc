@@ -3,10 +3,12 @@ package app
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/alauda/helm-crds/pkg/apis/app/v1alpha1"
 	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"helm.sh/helm/pkg/chartutil"
 	"helm.sh/helm/pkg/strvals"
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog"
 	"strings"
@@ -31,6 +33,8 @@ type UpgradeOption struct {
 
 	// maybe the user what to use a different repo
 	repo string
+
+	cm string
 
 	pctx *plugin.CaptainContext
 }
@@ -67,6 +71,7 @@ func NewUpgradeCommand() *cobra.Command {
 	cmd.Flags().BoolVarP(&opts.wait, "wait", "w", false, "wait for the helmrequest to be synced")
 	cmd.Flags().IntVarP(&opts.timeout, "timeout", "t", 0, "timeout for the wait")
 	cmd.Flags().StringVarP(&opts.repo, "repo", "r", "", "chartrepo for the chart")
+	cmd.Flags().StringVarP(&opts.cm, "configmap", "", "", "configmap to obtain values from, it must contains a key called 'values.yaml'")
 	return cmd
 }
 
@@ -115,6 +120,27 @@ func (opts *UpgradeOption) Run(args []string) (err error) {
 		splits := strings.Split(hr.Spec.Chart, "/")
 		hr.Spec.Chart = opts.repo + "/" + splits[1]
 	}
+
+	// check configmap first
+	if opts.cm != "" {
+		_, err := pctx.GetConfigMap(opts.cm)
+		if err != nil {
+			return errors.Wrap(err, "ref configmap not eixst")
+		}
+
+		optional := false
+
+		hr.Spec.ValuesFrom = []v1alpha1.ValuesFromSource{
+			{
+				ConfigMapKeyRef: &v1.ConfigMapKeySelector{
+					LocalObjectReference: v1.LocalObjectReference{Name: opts.cm},
+					Key:                  "values.yaml",
+					Optional:             &optional,
+				},
+			},
+		}
+	}
+
 
 	// merge values....oh,we have to import helm now....
 	base := hr.Spec.Values.AsMap()

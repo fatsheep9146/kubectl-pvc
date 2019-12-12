@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"helm.sh/helm/pkg/chartutil"
 	"helm.sh/helm/pkg/strvals"
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog"
 	"time"
@@ -27,6 +28,8 @@ type CreateOption struct {
 
 	wait    bool
 	timeout int
+
+	cm string
 
 	pctx *plugin.CaptainContext
 }
@@ -63,6 +66,7 @@ func NewCreateCommand() *cobra.Command {
 	cmd.Flags().BoolVarP(&opts.wait, "wait", "w", false, "wait for the helmrequest to be synced")
 	cmd.Flags().IntVarP(&opts.timeout, "timeout", "t", 0, "timeout for the wait")
 	cmd.Flags().StringVarP(&opts.chart, "chart", "c", "", "chart name, format: <repo>/<chart>")
+	cmd.Flags().StringVarP(&opts.cm, "configmap", "", "", "configmap to obtain values from, it must contains a key called 'values.yaml'")
 	return cmd
 }
 
@@ -96,6 +100,26 @@ func (opts *CreateOption) Run(args []string) (err error) {
 	hr.Spec.Chart = opts.chart
 	hr.Name = name
 	hr.Namespace = pctx.GetNamespace()
+
+	// check configmap first
+	if opts.cm != "" {
+		_, err := pctx.GetConfigMap(opts.cm)
+		if err != nil {
+			return errors.Wrap(err, "ref configmap not eixst")
+		}
+
+		optional := false
+
+		hr.Spec.ValuesFrom = []v1alpha1.ValuesFromSource{
+			{
+				ConfigMapKeyRef: &v1.ConfigMapKeySelector{
+					LocalObjectReference: v1.LocalObjectReference{Name: opts.cm},
+					Key:                  "values.yaml",
+					Optional:             &optional,
+				},
+			},
+		}
+	}
 
 	// merge values....oh,we have to import helm now....
 	base := hr.Spec.Values.AsMap()

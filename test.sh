@@ -4,9 +4,12 @@
 echo "[0] TEST CREATE"
 
 kubectl delete hr test-nginx
+kubectl delete cm test-nginx
+kubectl create  cm test-nginx --from-file=tests/values.yaml
 
-kubectl captain create test-nginx --chart=stable/nginx-ingress --version=1.26.2 --set=a=b -w --timeout=30
+kubectl captain create test-nginx --chart=stable/nginx-ingress --version=1.26.2 --set=a=b -w --timeout=30 --configmap=test-nginx
 
+kubectl get hr test-nginx -o yaml
 
 if [ $(kubectl get hr test-nginx -o json | jq -r .status.phase) != "Synced" ]
 then
@@ -31,7 +34,9 @@ done
 
 
 echo "[2] TEST UPGGRADE"
-kubectl captain upgrade test-nginx --repo=stable --version=1.26.2 -w --timeout=30
+kubectl delete cm test-nginx-2
+kubectl create  cm test-nginx-2 --from-file=tests/values.yaml
+kubectl captain upgrade test-nginx --repo=stable --version=1.26.2 -w --timeout=30 --configmap=test-nginx-2
 
 kubectl captain upgrade test-nginx  --version=1.26.1 -w --timeout=30
 if [ $(kubectl get hr test-nginx -o json | jq -r .status.phase) != "Synced" ]
@@ -46,6 +51,7 @@ then
     exit 1
 fi
 
+kubectl get hr test-nginx -o yaml
 
 
 echo "[3] TEST ROLLBACK"
@@ -69,7 +75,6 @@ then
 fi
 
 
-
-
+kubectl delete cm test-nginx
 kubectl delete ctr test-repo -n captain
 kubectl delete hr test-nginx 
