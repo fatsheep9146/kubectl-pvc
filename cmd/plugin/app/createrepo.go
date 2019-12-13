@@ -115,6 +115,11 @@ func (opts *CreateRepoOption) Run(args []string) (err error) {
 		return err
 	}
 
+	if err != nil {
+		klog.Error("Create chartrepo error: ", err)
+		return err
+	}
+
 	klog.Info("Start wait for chartrepo to be synced")
 
 	f := func() (done bool, err error) {
