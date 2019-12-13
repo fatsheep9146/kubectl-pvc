@@ -15,7 +15,7 @@ func NewCaptainCommand(streams genericclioptions.IOStreams) *cobra.Command {
 	var ns string
 
 	cmd := &cobra.Command{
-		Use:   "cpatain",
+		Use:   "captain",
 		Short: "kubectl captain: access helmrequest/chartrepo resource",
 		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
 			err := pctx.Complete(ns)
