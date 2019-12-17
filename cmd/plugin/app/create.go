@@ -133,6 +133,9 @@ func (opts *CreateOption) Run(args []string) (err error) {
 
 	_, err = pctx.CreateHelmRequest(&hr)
 	if !opts.wait {
+		if err == nil {
+			klog.Info("Create helmrequest: ", hr.GetName())
+		}
 		return err
 	}
 
