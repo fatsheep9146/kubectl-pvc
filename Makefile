@@ -4,6 +4,7 @@ all: build
 
 build:
 	CGO_ENABLED=0 GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o _output/kubectl-captain ./cmd/plugin
+	cd _output && tar -zcvf kubectl-captain.tar.gz kubectl-captain
 
 clean:
 	go clean -r -x
