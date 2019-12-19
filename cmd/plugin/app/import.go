@@ -13,11 +13,13 @@ import (
 	v1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/klog"
 	"os/exec"
 	"os/user"
 	"strings"
+	"time"
 )
 
 var (
@@ -37,6 +39,9 @@ type ImportOptions struct {
 
 	// useful in business cluster,
 	createCR bool
+
+	wait    bool
+	timeout int
 }
 
 func NewImportOptions() *ImportOptions {
@@ -52,7 +57,7 @@ func NewImportCommand() *cobra.Command {
 		SuggestFor: nil,
 		Short:      "import a helm release to helmrequest",
 		Long:       "",
-		Example:    rollbackExample,
+		Example:    importExample,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if err := opts.Complete(pctx); err != nil {
 				return err
@@ -78,6 +83,8 @@ func NewImportCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&opts.repoNamespace, "repo-namespace", "", "alauda-system", "the ChartRepo resources' namespace")
 	cmd.Flags().StringVarP(&opts.helmBinPath, "helm-bin-path", "", "/usr/local/bin/helm", "the helm binary path")
 	cmd.Flags().BoolVarP(&opts.createCR, "create-chartrepo", "", true, "create chartrepo")
+	cmd.Flags().BoolVarP(&opts.wait, "wait", "w", false, "wait for the helmrequest to be synced")
+	cmd.Flags().IntVarP(&opts.timeout, "timeout", "t", 0, "timeout for the wait")
 	return cmd
 }
 
@@ -163,9 +170,29 @@ func (opts *ImportOptions) Run(args []string) (err error) {
 		},
 	}
 
-	// klog.Info("get result:", hr)
-	_, err = opts.pctx.CreateHelmRequest(&hr)
-	return err
+	_, err = pctx.CreateHelmRequest(&hr)
+	if !opts.wait {
+		if err == nil {
+			klog.Info("Create helmrequest: ", hr.GetName())
+		}
+		return err
+	}
+
+	klog.Info("Start wait for helmrequest to be synced")
+
+	f := func() (done bool, err error) {
+		result, err := pctx.GetHelmRequest(hr.GetName())
+		if err != nil {
+			return false, err
+		}
+		return result.Status.Phase == "Synced", nil
+	}
+
+	if opts.timeout != 0 {
+		return wait.Poll(1*time.Second, time.Duration(opts.timeout)*time.Second, f)
+	} else {
+		return wait.PollInfinite(1*time.Second, f)
+	}
 
 }
 
