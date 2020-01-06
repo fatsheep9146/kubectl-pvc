@@ -141,7 +141,6 @@ func (opts *UpgradeOption) Run(args []string) (err error) {
 		}
 	}
 
-
 	// merge values....oh,we have to import helm now....
 	base := hr.Spec.Values.AsMap()
 	for _, value := range opts.values {

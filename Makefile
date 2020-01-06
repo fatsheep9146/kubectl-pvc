@@ -1,6 +1,6 @@
 .PHONY: all clean
 
-all: build
+all: fmt vet build install-local
 
 build:
 	CGO_ENABLED=0 GO111MODULE=on GOOS=linux GOARCH=amd64 go build -o _output/kubectl-captain ./cmd/plugin
@@ -21,3 +21,9 @@ install-local:
 
 test:
 	bash test.sh
+
+vet:
+	go vet ./...
+
+fmt:
+	find ./ -type f -name "*.go" -exec gofmt -w {} \;

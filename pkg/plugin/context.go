@@ -59,6 +59,10 @@ func (p *CaptainContext) UpdateHelmRequest(new *v1alpha1.HelmRequest) (*v1alpha1
 	return p.cli.AppV1alpha1().HelmRequests(p.namespace).Update(new)
 }
 
+func (p *CaptainContext) UpdateHelmRequestStatus(new *v1alpha1.HelmRequest) (*v1alpha1.HelmRequest, error) {
+	return p.cli.AppV1alpha1().HelmRequests(p.namespace).UpdateStatus(new)
+}
+
 func (p *CaptainContext) CreateChartRepo(new *v1alpha1.ChartRepo) (*v1alpha1.ChartRepo, error) {
 	return p.cli.AppV1alpha1().ChartRepos(new.GetNamespace()).Create(new)
 }
