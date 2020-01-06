@@ -32,6 +32,7 @@ func NewCaptainCommand(streams genericclioptions.IOStreams) *cobra.Command {
 	cmd.AddCommand(NewUpgradeCommand())
 	cmd.AddCommand(NewRollbackCommand())
 	cmd.AddCommand(NewImportCommand())
+	cmd.AddCommand(NewTriggerUpdateCommand())
 
 	return cmd
 }

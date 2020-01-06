@@ -3,10 +3,11 @@
 
 This is kubectl plugin for [captain](https://github.com/alauda/captain), currently it support the following commands:
 
+* `kubectl captain create`: create a helmrequest
 * `kubectl captain upgrade`: upgrade a helmrequest
+* `kubectl captain trigger-update`: trigger update on a helmrequest
 * `kubectl captain rollback`: rollback a helmrequest
 * `kubectl captain import`: import a helmrelease to captain
-* `kubectl captain create`: create a helmrequest
 * `kubectl captain create-repo`: create a chartrepo
 
 

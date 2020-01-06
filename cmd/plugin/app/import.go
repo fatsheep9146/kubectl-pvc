@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 	"helm.sh/helm/pkg/chartutil"
 	"io/ioutil"
-	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -166,7 +166,7 @@ func (opts *ImportOptions) Run(args []string) (err error) {
 			Version:              version,
 			Namespace:            opts.pctx.GetNamespace(),
 			ValuesFrom:           nil,
-			HelmValues:           v1alpha1.HelmValues{values},
+			HelmValues:           v1alpha1.HelmValues{Values: values},
 		},
 	}
 
