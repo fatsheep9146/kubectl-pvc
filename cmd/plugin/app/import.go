@@ -42,6 +42,9 @@ type ImportOptions struct {
 
 	wait    bool
 	timeout int
+
+	chart   string
+	version string
 }
 
 func NewImportOptions() *ImportOptions {
@@ -85,6 +88,8 @@ func NewImportCommand() *cobra.Command {
 	cmd.Flags().BoolVarP(&opts.createCR, "create-chartrepo", "", true, "create chartrepo")
 	cmd.Flags().BoolVarP(&opts.wait, "wait", "w", false, "wait for the helmrequest to be synced")
 	cmd.Flags().IntVarP(&opts.timeout, "timeout", "t", 0, "timeout for the wait")
+	cmd.Flags().StringVarP(&opts.chart, "chart", "c", "", "chart to use")
+	cmd.Flags().StringVarP(&opts.version, "version", "v", "", "chart version to use")
 	return cmd
 }
 
@@ -128,6 +133,14 @@ func (opts *ImportOptions) Run(args []string) (err error) {
 	chart, version, err := opts.getChartVersion(name)
 	if err != nil {
 		return err
+	}
+
+	if opts.version != "" {
+		version = opts.version
+	}
+
+	if opts.chart != "" {
+		chart = opts.chart
 	}
 
 	if opts.createCR {
