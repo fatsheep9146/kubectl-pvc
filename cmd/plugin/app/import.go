@@ -343,11 +343,17 @@ func (opts *ImportOptions) getChartVersion(name string) (string, string, error) 
 		return "", "", errors.New("release not found")
 	}
 
-	result := strings.Split(chartVersion, "-")
-	version := result[len(result)-1]
-	l := len(chartVersion) - len(version) - 1
-	chart := chartVersion[:l]
+	chart, version := parseVersion(chartVersion)
 	klog.Infof("Parsed chart version: %s %s", chart, version)
 	return chart, version, nil
 
+}
+
+func parseVersion(chartVersion string) (string, string) {
+	result := strings.Split(chartVersion, "-v")
+	version := result[len(result)-1]
+	l := len(chartVersion) - len(version) - 1
+	chart := chartVersion[:l-1]
+	version = "v" + version
+	return chart, version
 }
