@@ -135,12 +135,14 @@ func (opts *ImportOptions) Run(args []string) (err error) {
 		return err
 	}
 
-	if opts.version != "" {
-		version = opts.version
+	if opts.chart != "" {
+		klog.Info("Use chart from flag: ", opts.chart)
+		chart = opts.chart
 	}
 
-	if opts.chart != "" {
-		chart = opts.chart
+	if opts.version != "" {
+		klog.Info("Use version from flag: ", opts.version)
+		version = opts.version
 	}
 
 	if opts.createCR {
@@ -363,10 +365,19 @@ func (opts *ImportOptions) getChartVersion(name string) (string, string, error) 
 }
 
 func parseVersion(chartVersion string) (string, string) {
+	sep := 2
+
 	result := strings.Split(chartVersion, "-v")
+	if len(result) == 1 {
+		result = strings.Split(chartVersion, "-")
+		sep = 1
+	}
 	version := result[len(result)-1]
 	l := len(chartVersion) - len(version) - 1
-	chart := chartVersion[:l-1]
-	version = "v" + version
+	chart := chartVersion[:l+1-sep]
+	if sep == 2 {
+		version = "v" + version
+	}
+
 	return chart, version
 }

@@ -14,6 +14,7 @@ func TestVersionParser(t *testing.T) {
 	}{
 		{"chart-v2.8-b.9", "chart", "v2.8-b.9"},
 		{"chart-v2.8.1", "chart", "v2.8.1"},
+		{"chart-2.8.1", "chart", "2.8.1"},
 	}
 
 	for _, tt := range tests {
