@@ -3,12 +3,15 @@ package plugin
 import (
 	"github.com/alauda/helm-crds/pkg/apis/app/v1alpha1"
 	clientset "github.com/alauda/helm-crds/pkg/client/clientset/versioned"
+	"github.com/teris-io/shortid"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/klog"
+	"strings"
+	"time"
 )
 
 // CaptainContext holds context for captain command
@@ -17,6 +20,9 @@ type CaptainContext struct {
 	cli       clientset.Interface
 	config    *rest.Config
 	namespace string
+
+	// core client to create event
+	core kubernetes.Interface
 }
 
 func NewCaptainContext(streams genericclioptions.IOStreams) *CaptainContext {
@@ -39,7 +45,15 @@ func (p *CaptainContext) Complete(namespace string) (err error) {
 	p.cli, err = clientset.NewForConfig(p.config)
 	if err != nil {
 		klog.Errorf("initial kubernetes.clientset obj cli failed, err: %v", err)
+		return err
 	}
+
+	p.core, err = kubernetes.NewForConfig(p.config)
+	if err != nil {
+		klog.Errorf("init kubernetes core client failed, err: %v", err)
+		return err
+	}
+
 	return nil
 }
 
@@ -76,10 +90,39 @@ func (p *CaptainContext) GetRestConfig() *rest.Config {
 }
 
 func (p *CaptainContext) GetConfigMap(name string) (*v1.ConfigMap, error) {
-	cli, err := kubernetes.NewForConfig(p.config)
-	if err != nil {
-		return nil, err
-	}
+	return p.core.CoreV1().ConfigMaps(p.namespace).Get(name, metav1.GetOptions{})
+}
 
-	return cli.CoreV1().ConfigMaps(p.namespace).Get(name, metav1.GetOptions{})
+// CreateEvent a event for upgrade/rollback...
+func (p *CaptainContext) CreateEvent(et string, reason, message string, hr *v1alpha1.HelmRequest) {
+
+	uid, _ := shortid.Generate()
+
+	event := v1.Event{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: hr.Name + "." + strings.ToLower(uid),
+		},
+		Type: et,
+		Source: v1.EventSource{
+			Component: "kubectl-captain",
+		},
+		Reason:  reason,
+		Message: message,
+		InvolvedObject: v1.ObjectReference{
+			// why it's not work use hr.Kind
+			Kind:            "HelmRequest",
+			Namespace:       hr.Namespace,
+			Name:            hr.Name,
+			UID:             hr.UID,
+			APIVersion:      hr.APIVersion,
+			ResourceVersion: hr.ResourceVersion,
+		},
+		LastTimestamp:  metav1.NewTime(time.Now()),
+		FirstTimestamp: metav1.NewTime(time.Now()),
+	}
+	_, err := p.core.CoreV1().Events(hr.Namespace).Create(&event)
+	if err != nil {
+		klog.Errorf("create event for helmrequest %s error: %s", hr.Name, err.Error())
+	}
+	return
 }
