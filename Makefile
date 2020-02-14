@@ -1,5 +1,3 @@
-VERSION = 0.6.0
-
 .PHONY: all clean
 
 all: fmt vet build install-local
