@@ -167,9 +167,19 @@ func (opts *UpgradeOption) Run(args []string) (err error) {
 	}
 
 	if opts.timeout != 0 {
-		return wait.Poll(1*time.Second, time.Duration(opts.timeout)*time.Second, f)
+		err = wait.Poll(1*time.Second, time.Duration(opts.timeout)*time.Second, f)
 	} else {
-		return wait.PollInfinite(1*time.Second, f)
+		err = wait.PollInfinite(1*time.Second, f)
 	}
+
+	if err != nil {
+		message := fmt.Sprintf("Updated helmrequest %s error with version: %s values: %+v, err: %s", hr.Name, opts.version, opts.values, err.Error())
+		pctx.CreateEvent("Warning", "FailedSync", message, hr)
+	} else {
+		message := fmt.Sprintf("Updated helmrequest %s with version: %s values: %+v", hr.Name, opts.version, opts.values)
+		pctx.CreateEvent("Normal", "Synced", message, hr)
+	}
+
+	return err
 
 }

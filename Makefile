@@ -1,3 +1,5 @@
+VERSION = 0.6.0
+
 .PHONY: all clean
 
 all: fmt vet build install-local
@@ -16,7 +18,7 @@ mod:
 
 
 install-local:
-	CGO_ENABLED=0 GO111MODULE=on  go build -o _output/kubectl-captain ./cmd/plugin
+	CGO_ENABLED=0 GO111MODULE=on  go build  -o _output/kubectl-captain ./cmd/plugin
 	cp _output/kubectl-captain /usr/local/bin
 
 test:
