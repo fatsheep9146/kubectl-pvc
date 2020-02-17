@@ -26,7 +26,7 @@ func NewCaptainCommand(streams genericclioptions.IOStreams) *cobra.Command {
 		},
 	}
 
-	cmd.PersistentFlags().StringVarP(&ns, "namespace", "n", "default", "the namespace you want to check")
+	cmd.PersistentFlags().StringVarP(&ns, "namespace", "n", "default", "the working namespace")
 	cmd.AddCommand(NewCreateRepoCommand())
 	cmd.AddCommand(NewCreateCommand())
 	cmd.AddCommand(NewUpgradeCommand())
@@ -34,6 +34,7 @@ func NewCaptainCommand(streams genericclioptions.IOStreams) *cobra.Command {
 	cmd.AddCommand(NewImportCommand())
 	cmd.AddCommand(NewTriggerUpdateCommand())
 	cmd.AddCommand(NewVersionCommand())
+	cmd.AddCommand(NewResyncRepoCommand())
 
 	return cmd
 }
